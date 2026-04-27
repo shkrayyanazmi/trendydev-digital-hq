@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ludo Arena</title>
+  <style>
+    body { margin:0; font-family: Inter, Arial, sans-serif; background:#0f172a; color:#e2e8f0; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+    .card { background:#111827; border:1px solid #334155; border-radius:14px; padding:14px; margin-bottom:12px; }
+    button { border:0; border-radius:10px; padding:10px 14px; font-weight:700; }
+    .primary { background:#4f46e5; color:white; }
+    .secondary { background:#1f2937; color:#e2e8f0; border:1px solid #475569; }
+    .tokens { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .token { background:#e2e8f0; color:#0f172a; }
+    .players { display:grid; grid-template-columns:1fr; gap:10px; }
+    .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:8px; }
+    .small { color:#94a3b8; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h2 style="margin:0 0 8px 0">Ludo Arena (APK Build)</h2>
+    <div id="status">Roll the dice to begin.</div>
+    <div style="margin-top:10px; display:flex; gap:8px;">
+      <button class="primary" id="rollBtn">Roll Dice</button>
+      <button class="secondary" id="resetBtn">Reset</button>
+    </div>
+    <div id="actions" class="tokens"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Leaderboard</h3>
+    <ol id="leaderboard"></ol>
+  </div>
+  <div class="players" id="players"></div>
+</div>
+<script>
+const PLAYERS = [
+  { id:0, name:'Red', color:'#ef4444', startIndex:0 },
+  { id:1, name:'Green', color:'#22c55e', startIndex:13 },
+  { id:2, name:'Yellow', color:'#f59e0b', startIndex:26 },
+  { id:3, name:'Blue', color:'#0ea5e9', startIndex:39 },
+];
+const SAFE = new Set([0,8,13,21,26,34,39,47]);
+const TOKENS = 4;
+const FINAL = 57;
+
+let players, turn, dice, leaderboard;
+
+function init() {
+  players = PLAYERS.map(p => ({...p, finishedCount:0, tokens: Array.from({length:TOKENS}, (_,id)=>({id, progress:-1}))}));
+  turn = 0;
+  dice = null;
+  leaderboard = [];
+  setStatus('Game reset. Red starts.');
+  render();
+}
+
+function boardIndex(player, token) {
+  if (token.progress < 0 || token.progress > 51) return null;
+  return (player.startIndex + token.progress) % 52;
+}
+
+function canMove(token, roll) {
+  if (token.progress === -1) return roll === 6;
+  return token.progress + roll <= FINAL;
+}
+
+function setStatus(msg) { document.getElementById('status').textContent = msg; }
+
+function rollDice() {
+  if (dice) return;
+  dice = Math.floor(Math.random()*6)+1;
+  const active = players[turn];
+  const movable = active.tokens.filter(t=>canMove(t,dice));
+  if (!movable.length) {
+    setStatus(`${active.name} rolled ${dice}. No valid move.`);
+    render();
+    setTimeout(()=>{ turn=(turn+1)%4; dice=null; setStatus(`${players[turn].name} turn.`); render(); }, 600);
+    return;
+  }
+  setStatus(`${active.name} rolled ${dice}. Choose a token.`);
+  render();
+}
+
+function moveToken(id) {
+  if (!dice) return;
+  const active = players[turn];
+  const token = active.tokens[id];
+  if (!canMove(token, dice)) return;
+
+  token.progress = token.progress === -1 ? 0 : token.progress + dice;
+  let captured = false;
+  const landed = boardIndex(active, token);
+  if (landed !== null && !SAFE.has(landed)) {
+    players.forEach((p, pi) => {
+      if (pi === turn) return;
+      p.tokens.forEach(t => {
+        if (boardIndex(p,t) === landed) { t.progress = -1; captured = true; }
+      });
+    });
+  }
+
+  if (token.progress === FINAL) {
+    active.finishedCount += 1;
+    if (active.finishedCount === TOKENS && !leaderboard.includes(active.id)) leaderboard.push(active.id);
+  }
+
+  const extra = dice === 6 || captured;
+  if (leaderboard.length === 4) {
+    setStatus('Match complete.');
+    dice = null;
+    render();
+    return;
+  }
+  if (extra) {
+    setStatus(captured ? `${active.name} captured and rolls again!` : `${active.name} rolled 6 and rolls again!`);
+    dice = null;
+  } else {
+    turn = (turn + 1) % 4;
+    setStatus(`${players[turn].name} turn.`);
+    dice = null;
+  }
+  render();
+}
+
+function render() {
+  const actions = document.getElementById('actions');
+  const rollBtn = document.getElementById('rollBtn');
+  rollBtn.textContent = dice ? `Rolled: ${dice}` : 'Roll Dice';
+  rollBtn.disabled = !!dice;
+
+  actions.innerHTML = '';
+  if (dice) {
+    players[turn].tokens.forEach(t => {
+      if (canMove(t,dice)) {
+        const btn = document.createElement('button');
+        btn.className = 'token';
+        btn.textContent = `Token ${t.id+1}`;
+        btn.onclick = () => moveToken(t.id);
+        actions.appendChild(btn);
+      }
+    });
+  }
+
+  const board = document.getElementById('players');
+  board.innerHTML = '';
+  players.forEach((p, idx) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    const head = `<h4 style='margin:0'><span class='dot' style='background:${p.color}'></span>${p.name}${idx===turn?' (ACTIVE)':''}</h4>`;
+    const list = p.tokens.map(t => {
+      const bi = boardIndex(p,t);
+      const label = t.progress===-1?'Base':t.progress===FINAL?'Finished':bi!==null?`Track #${bi}`:`Home lane (${t.progress-51}/6)`;
+      return `<div class='small'>Token ${t.id+1}: <b style='color:#fff'>${label}</b></div>`;
+    }).join('');
+    el.innerHTML = head + list + `<div class='small' style='margin-top:6px'>Finished: ${p.finishedCount}/${TOKENS}</div>`;
+    board.appendChild(el);
+  });
+
+  const lb = document.getElementById('leaderboard');
+  lb.innerHTML = leaderboard.map(id => `<li>${PLAYERS[id].name}</li>`).join('');
+}
+
+document.getElementById('rollBtn').addEventListener('click', rollDice);
+document.getElementById('resetBtn').addEventListener('click', init);
+init();
+</script>
+</body>
+</html>
